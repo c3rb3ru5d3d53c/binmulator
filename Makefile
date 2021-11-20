@@ -29,3 +29,6 @@ uninstall:
 
 clean-unicorn:
 	rm -rf src/unicorn/build/
+
+clean:
+	rm -rf build/
