@@ -20,11 +20,11 @@ int main(int argc, char **argv){
         void *data = malloc(sizeof(X86_CODE32)-1);
         memcpy(data, X86_CODE32, sizeof(X86_CODE32)-1);
         common_hex_dump("code", data, sizeof(X86_CODE32)-1);
-        emu.WriteMemory(0x1000000, data, sizeof(X86_CODE32)-1);
+        emu.WriteMemory(args.options.memory_address, data, sizeof(X86_CODE32)-1);
         emu.WriteRegister(UC_X86_REG_ECX, &r_ecx);
         emu.WriteRegister(UC_X86_REG_EDX, &r_edx);
         printf("rcx: 0x%x\n", r_ecx);
-        emu.Start(0x1000000, sizeof(X86_CODE32)-1);
+        emu.Start(args.options.memory_address, sizeof(X86_CODE32)-1);
         emu.ReadRegiser(UC_X86_REG_ECX, &r_ecx);
         printf("rcx: 0x%x\n", r_ecx);
         free(data);
