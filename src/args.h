@@ -10,6 +10,10 @@
 
 #define ARGS_MODE_COUNT 1
 
+#define ARGS_INPUT_TYPE_FILE    0
+#define ARGS_INPUT_TYPE_DIR     1
+#define ARGS_INPUT_TYPE_UNKNOWN 2
+
 class Args {
     private:
         void SetDefault(){
@@ -19,6 +23,7 @@ class Args {
             options.list_modes = false;
             options.memory_size = 32;
             options.memory_address = 0x1000000;
+            options.input_type = ARGS_INPUT_TYPE_UNKNOWN;
         }
         void CheckArg(int argc, int i){
             if (argc < i + 2){
@@ -32,6 +37,29 @@ class Args {
             }
             exit(0);
         }
+        int IsFile(const char *path){
+            struct stat path_stat;
+            if (stat(path, &path_stat) != 0){
+                return 0;
+            }
+            return S_ISREG(path_stat.st_mode);
+        }
+        int IsDir(const char *path) {
+            struct stat statbuf;
+            if (stat(path, &statbuf) != 0){
+                return 0;
+            }
+            return S_ISDIR(statbuf.st_mode);
+        }
+        void SetInputType(char *input){
+            if (IsFile(input) != 0){
+                options.input_type = ARGS_INPUT_TYPE_FILE;
+            } else if (IsDir(input) != 0){
+                options.input_type = ARGS_INPUT_TYPE_DIR;
+            } else{
+                options.input_type = ARGS_INPUT_TYPE_UNKNOWN;
+            }
+        }
     public:
         char version[7] = "v1.0.0";
         char author[16] = "@c3rb3ru5d3d53c";
@@ -39,6 +67,7 @@ class Args {
         struct {
             char *mode;
             char *input;
+            int input_type;
             bool help;
             bool list_modes;
             uint64_t memory_address;
@@ -81,6 +110,7 @@ class Args {
                 if (strcmp(argv[i], (char *)"-i") == 0 ||
                     strcmp(argv[i], (char *)"--input") == 0){
                     CheckArg(argc, i);
+                    SetInputType(argv[i+1]);
                     options.input = argv[i+1];
                 }
                 if (strcmp(argv[i], (char *)"-lm") == 0 ||

@@ -5,8 +5,6 @@
 #include <errno.h>
 #include <inttypes.h>
 #include <assert.h>
-#include <capstone/capstone.h>
-#include "common.h"
 
 #ifndef LINUX_ELF_H
 #define LINUX_ELF_H
@@ -19,7 +17,7 @@
 
 extern int errno;
 
-class Elf {
+class LinuxELF {
     private:
         struct Section {
             int offset;
@@ -98,7 +96,7 @@ class Elf {
         char *sh_str   = NULL;
         int mode       = LINUX_ELF_MODE_UNSET;
         struct Section sections[LINUX_ELF_MAX_SECTIONS];
-        Elf(){
+        LinuxELF(){
             SetSectionsDefault();
         }
         bool Setup(int input_mode){
@@ -222,7 +220,7 @@ class Elf {
             }
             return false;
         }
-        ~Elf(){
+        ~LinuxELF(){
             if (header != NULL){
                 free(header);
                 header = NULL;
