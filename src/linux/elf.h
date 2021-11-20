@@ -8,14 +8,14 @@
 #include <capstone/capstone.h>
 #include "common.h"
 
-#ifndef ELF_H
-#define ELF_H
+#ifndef LINUX_ELF_H
+#define LINUX_ELF_H
 
-#define ELF_MAX_SECTIONS 32
+#define LINUX_ELF_MAX_SECTIONS 32
 
-#define ELF_MODE_UNSET  0
-#define ELF_MODE_X86    1
-#define ELF_MODE_X86_64 2
+#define LINUX_ELF_MODE_UNSET  0
+#define LINUX_ELF_MODE_X86    1
+#define LINUX_ELF_MODE_X86_64 2
 
 extern int errno;
 
@@ -43,13 +43,13 @@ class Elf {
             return buffer0;
         }
         bool is_arch(int arch){
-            if (mode == ELF_MODE_X86){
+            if (mode == LINUX_ELF_MODE_X86){
                 Elf32_Ehdr *header_local = (Elf32_Ehdr *)header;
                 if (header_local->e_machine == arch){
                     return true;
                 }
             }
-            if (mode == ELF_MODE_X86_64){
+            if (mode == LINUX_ELF_MODE_X86_64){
                 Elf64_Ehdr *header_local = (Elf64_Ehdr *)header;
                 if (header_local->e_machine == arch){
                     return true;
@@ -59,11 +59,11 @@ class Elf {
         }
         bool is_elf(){
             int result = 1;
-            if (mode == ELF_MODE_X86){
+            if (mode == LINUX_ELF_MODE_X86){
                 Elf32_Ehdr *header_local = (Elf32_Ehdr *)header;
                 result =  memcmp(header_local->e_ident, magic, sizeof(magic));
             }
-            if (mode == ELF_MODE_X86_64){
+            if (mode == LINUX_ELF_MODE_X86_64){
                 Elf64_Ehdr *header_local = (Elf64_Ehdr *)header;
                 result =  memcmp(header_local->e_ident, magic, sizeof(magic));
             }
@@ -73,18 +73,18 @@ class Elf {
             return true;
         }
         unsigned int GetSectionTableSize(){
-            if (mode == ELF_MODE_X86){
+            if (mode == LINUX_ELF_MODE_X86){
                 Elf32_Ehdr *header_local = (Elf32_Ehdr *)header;
                 return header_local->e_shentsize * header_local->e_shnum;
             }
-            if (mode == ELF_MODE_X86_64){
+            if (mode == LINUX_ELF_MODE_X86_64){
                 Elf64_Ehdr *header_local = (Elf64_Ehdr *)header;
                 return header_local->e_shentsize * header_local->e_shnum;
             }
             return 0;
         }
         void SetSectionsDefault(){
-            for (int i = 0; i < ELF_MAX_SECTIONS; i++){
+            for (int i = 0; i < LINUX_ELF_MAX_SECTIONS; i++){
                 sections[i].data = NULL;
                 sections[i].offset = 0;
                 sections[i].size = 0;
@@ -96,30 +96,30 @@ class Elf {
         void *header   = NULL;
         void *sh_table = NULL;
         char *sh_str   = NULL;
-        int mode       = ELF_MODE_UNSET;
-        struct Section sections[ELF_MAX_SECTIONS];
+        int mode       = LINUX_ELF_MODE_UNSET;
+        struct Section sections[LINUX_ELF_MAX_SECTIONS];
         Elf(){
             SetSectionsDefault();
         }
         bool Setup(int input_mode){
             switch(input_mode){
-                case ELF_MODE_X86:
+                case LINUX_ELF_MODE_X86:
                     header = (Elf32_Ehdr *)malloc(sizeof(Elf32_Ehdr));
-                    mode = ELF_MODE_X86;
+                    mode = LINUX_ELF_MODE_X86;
                     break;
-                case ELF_MODE_X86_64:
+                case LINUX_ELF_MODE_X86_64:
                     header = (Elf64_Ehdr *)malloc(sizeof(Elf64_Ehdr));
-                    mode = ELF_MODE_X86_64;
+                    mode = LINUX_ELF_MODE_X86_64;
                     break;
                 default:
                     fprintf(stderr, "[x] unsupported elf executable mode\n");
-                    mode = ELF_MODE_UNSET;
+                    mode = LINUX_ELF_MODE_UNSET;
                     return false;
             }
             return true;
         }
         bool ReadSectionHeaders(){
-            if (mode == ELF_MODE_X86){
+            if (mode == LINUX_ELF_MODE_X86){
                 Elf32_Ehdr *header_local = (Elf32_Ehdr *)header;
                 Elf32_Shdr *sh_table_local = (Elf32_Shdr *)sh_table;
                 fseek(fd, header_local->e_shoff, SEEK_SET);
@@ -132,7 +132,7 @@ class Elf {
                 fread(sh_str, 1, sh_table_local[header_local->e_shstrndx].sh_size, fd);
                 return true;
             }
-            if (mode == ELF_MODE_X86_64){
+            if (mode == LINUX_ELF_MODE_X86_64){
                 Elf64_Ehdr *header_local = (Elf64_Ehdr *)header;
                 Elf64_Shdr *sh_table_local = (Elf64_Shdr *)sh_table;
                 fseek(fd, header_local->e_shoff, SEEK_SET);
@@ -154,7 +154,7 @@ class Elf {
                 return false;
             }
             fseek(fd, 0, SEEK_SET);
-            if (mode == ELF_MODE_X86){
+            if (mode == LINUX_ELF_MODE_X86){
                 Elf32_Ehdr *header_local = (Elf32_Ehdr *)header;
                 fread(header_local, sizeof(Elf32_Ehdr), 1, fd);
                 if (is_arch(EM_386) == false){
@@ -163,7 +163,7 @@ class Elf {
                 }
                 sh_table = (Elf32_Shdr *)malloc(GetSectionTableSize());
             }
-            if (mode == ELF_MODE_X86_64){
+            if (mode == LINUX_ELF_MODE_X86_64){
                 Elf64_Ehdr *header_local = (Elf64_Ehdr *)header;
                 fread(header_local, sizeof(Elf64_Ehdr), 1, fd);
                 if (is_arch(EM_X86_64) == false){
@@ -180,7 +180,7 @@ class Elf {
             return true;
         }
         bool GetExecutableData(){
-            if (mode == ELF_MODE_X86){
+            if (mode == LINUX_ELF_MODE_X86){
                 int section_index = 0;
                 Elf32_Ehdr *header_local = (Elf32_Ehdr *)header;
                 Elf32_Shdr *sh_table_local = (Elf32_Shdr *)sh_table;
@@ -200,7 +200,7 @@ class Elf {
                 }
                 return true;
             }
-            if (mode == ELF_MODE_X86_64){
+            if (mode == LINUX_ELF_MODE_X86_64){
                 Elf64_Ehdr *header_local = (Elf64_Ehdr *)header;
                 Elf64_Shdr *sh_table_local = (Elf64_Shdr *)sh_table;
                 int section_index = 0;
@@ -239,7 +239,7 @@ class Elf {
                 fclose(fd);
                 fd = NULL;
             }
-            for (int i = 0; i < ELF_MAX_SECTIONS; i++){
+            for (int i = 0; i < LINUX_ELF_MAX_SECTIONS; i++){
                 if (sections[i].data != NULL){
                     free(sections[i].data);
                 }
