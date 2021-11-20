@@ -27,8 +27,8 @@ install:
 uninstall:
 	rm -f /usr/bin/binmulator
 
-clean-unicorn:
+unicorn-clean:
 	rm -rf src/unicorn/build/
 
-clean:
+clean: unicorn-clean
 	rm -rf build/
